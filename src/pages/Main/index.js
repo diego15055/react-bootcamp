@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import { FaGithubAlt, FaPlus, FaSpinner } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 import api from '../../services/api';
-import { Container, Form, SubmitButton } from './styles';
+import Container from '../../components/Container';
+import { Form, SubmitButton, List } from './styles';
 
 export default class Main extends Component {
   // eslint-disable-next-line react/state-in-constructor
@@ -10,6 +12,20 @@ export default class Main extends Component {
     repositories: [],
     loading: false,
   };
+
+  componentDidMount = () => {
+    const repositories = localStorage.getItem('repositories');
+    if (repositories) {
+      this.setState({ repositories: JSON.parse(repositories) });
+    }
+  };
+
+  componentDidUpdate(_, prevState) {
+    const { repositories } = this.state;
+    if (prevState !== repositories) {
+      localStorage.setItem('repositories', JSON.stringify(repositories));
+    }
+  }
 
   handleInputChange = (e) => {
     this.setState({ newRepo: e.target.value });
@@ -32,7 +48,7 @@ export default class Main extends Component {
   };
 
   render() {
-    const { newRepo, loading } = this.state;
+    const { newRepo, repositories, loading } = this.state;
 
     return (
       <Container>
@@ -49,14 +65,25 @@ export default class Main extends Component {
             onChange={this.handleInputChange}
           />
 
-          <SubmitButton loading={loading}>
+          <SubmitButton loading={loading ? 1 : 0}>
             {loading ? (
-              <FaSpinner color="FFF" size={14} />
+              <FaSpinner color="#FFF" size={14} />
             ) : (
               <FaPlus color="#FFF" size={14} />
             )}
           </SubmitButton>
         </Form>
+
+        <List>
+          {repositories.map((repository) => (
+            <li key={repository.name}>
+              <span>{repository.name}</span>
+              <Link to={`/repository/${encodeURIComponent(repository.name)}`}>
+                Details
+              </Link>
+            </li>
+          ))}
+        </List>
       </Container>
     );
   }
